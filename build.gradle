@@ -1,29 +1,67 @@
 plugins {
-    id 'java-base'
-    id 'com.github.johnrengelman.shadow'
+    id 'java'
+    id "io.spring.dependency-management" version "1.1.4"
 }
 
 wrapper {
     gradleVersion = gradlewVersion
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+
 subprojects {
     apply plugin: 'java'
-    apply plugin: 'com.github.johnrengelman.shadow'
-
-    group = 'com.mjc.school'
+    apply plugin: 'jacoco'
+    group = "com.mjc.school"
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
 
     repositories {
         mavenCentral()
     }
+
+    dependencies {
+
+        implementation 'javax.xml.bind:jaxb-api:2.3.1'
+        implementation 'javax.validation:validation-api:2.0.1.Final'
+        implementation "org.springframework:spring-context:$springVersion"
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.7'
+        implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+        implementation 'com.h2database:h2:2.1.214'
+        implementation 'javax.xml.bind:jaxb-api:2.3.1'
+        implementation 'javax.validation:validation-api:2.0.1.Final'
+        implementation 'mysql:mysql-connector-java:8.0.33'
+        testImplementation "org.springframework:spring-test:$springVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$jupiterVersion"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
+        testImplementation "com.tngtech.archunit:archunit:$archUnitVersion"
+        testImplementation "com.tngtech.archunit:archunit-junit5:1.0.0"
+        testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+
+        annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
+        implementation "org.mapstruct:mapstruct:$mapstructVersion"
+
+        implementation 'org.hibernate.validator:hibernate-validator:7.0.2.Final'
+        compileOnly 'org.projectlombok:lombok:1.18.20'
+        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    }
+
+    test {
+        useJUnitPlatform()
+    }
 }
 
-task repack(type: Jar, dependsOn: ':module-main:build') {
+
+tasks.register('repack', Jar) {
+    dependsOn ':module-main:build'
     if (findProject(':module-main') != null) {
         entryCompression = ZipEntryCompression.STORED
-        def buildJar = zipTree("${project(':module-main').buildDir}/libs/module-main-all.jar")
+        def buildJar = zipTree("${project(':module-main').buildDir}/libs/module-main.jar")
         from(buildJar) { into('/') }
         manifest {
             attributes(
@@ -32,4 +70,3 @@ task repack(type: Jar, dependsOn: ':module-main:build') {
         }
     }
 }
-
